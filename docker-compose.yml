@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: notion_bot
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+
+  ngrok:
+    image: wernight/ngrok
+    container_name: ngrok
+    restart: always
+    environment:
+      - NGROK_PORT=app:8080
+      - NGROK_REGION=eu  # можно изменить
+      - NGROK_PROTO=http
+    ports:
+      - "4040:4040" # Web UI
