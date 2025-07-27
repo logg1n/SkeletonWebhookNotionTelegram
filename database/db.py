@@ -1,12 +1,29 @@
+# db.py
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Base
 
-# 🔧 путь к SQLite-файлу, можно заменить на PostgreSQL URI
-DATABASE_URL = "sqlite:///notion_events.db"
+from utils import settings
+from database import Base
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+# Для SQLite: отключаем проверку одного потока
+engine = create_engine(
+    settings.DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True,
+    connect_args={"check_same_thread": False}
+)
 
-def init_db():
+# Генератор сессий
+SessionLocal = sessionmaker(
+    bind=engine,
+    autocommit=False,
+    autoflush=False,
+)
+
+def init_db() -> None:
+    """
+    Создаёт все таблицы в базе данных.
+    Вызывать при старте приложения.
+    """
     Base.metadata.create_all(bind=engine)

@@ -1,26 +1,51 @@
-import os
-from dotenv import load_dotenv
+# utils/config.py
 
-load_dotenv()
-
-def get_env_var(name: str, default: str = None, required: bool = False):
-    value = os.getenv(name, default)
-    if required and (value is None or value.strip() == ""):
-        raise ValueError(f"⛔ Переменная окружения '{name}' обязательна, но не задана.")
-    return value
-
-# 🔐 Telegram
-BOT_TOKEN = get_env_var("BOT_TOKEN", required=True)
-CHAT_ID = get_env_var("CHAT_ID", required=True)
-
-# 🌐 Webhook
-SERVER_URL = get_env_var("SERVER_URL", required=True)
-WEBHOOK_PATH = get_env_var("WEBHOOK_PATH", "/telegram-webhook")
-WEBHOOK_URL = get_env_var("WEBHOOK_URL", f"{SERVER_URL}{WEBHOOK_PATH}")
-SERVER_URL = os.getenv("SERVER_URL")  # например: https://your-domain.up.railway.app
+from pydantic import Field, HttpUrl
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# 🧠 Notion
-NOTION_TOKEN = get_env_var("NOTION_TOKEN", required=True)
-DATABASE_ID = get_env_var("DATABASE_ID", required=True)
-NOTION_WEBHOOK_TOKEN = get_env_var("NOTION_WEBHOOK_TOKEN", default="")
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+    )
+
+    # 1. Окружение
+    ENV: str = Field("development", env="ENV")
+    DEBUG: bool = Field(True, env="DEBUG")
+    HOST: str = Field("0.0.0.0", env="HOST")
+    PORT: int = Field(8000, env="PORT")
+
+    # 2. База данных
+    DATABASE_URL: str = Field(
+        "sqlite:///./app.db",
+        env="DATABASE_URL",
+        description="sqlite:///./app.db или postgresql://user:pass@host/dbname"
+    )
+
+    # 3. Telegram
+    BOT_TOKEN: str = Field(..., env="BOT_TOKEN")
+    CHAT_ID: int = Field(..., env="CHAT_ID")
+
+    # 4. Webhook (Telegram)
+    SERVER_URL: HttpUrl = Field(..., env="SERVER_URL")
+    WEBHOOK_PATH: str = Field("/telegram-webhook", env="WEBHOOK_PATH")
+
+    @property
+    def WEBHOOK_URL(self) -> str:
+        return f"{self.SERVER_URL.rstrip('/')}{self.WEBHOOK_PATH}"
+
+    # 5. Notion
+    NOTION_TOKEN: str = Field(..., env="NOTION_TOKEN")
+    NOTION_DATABASE_ID: str = Field(..., env="NOTION_DATABASE_ID")
+    NOTION_WEBHOOK_TOKEN: str = Field("", env="NOTION_WEBHOOK_TOKEN")
+    NOTION_QUEUE_MAXSIZE: int = Field(100, env="NOTION_QUEUE_MAXSIZE")
+
+    # 6. Celery
+    CELERY_BROKER_URL: str = Field(..., env="CELERY_BROKER_URL")
+    CELERY_RESULT_BACKEND: str = Field(..., env="CELERY_RESULT_BACKEND")
+
+
+# Единственный экземпляр настроек
+settings = Settings()

@@ -1,7 +1,8 @@
+# telegram_bot/router.py
+
 from aiogram import Router, types
 from aiogram.filters import Command
-
-from utils import notion_queue
+from utils.queue import notion_queue    # <-- так
 
 router = Router()
 
@@ -16,4 +17,4 @@ async def ping_handler(message: types.Message):
 @router.message(Command("queue"))
 async def queue_size_handler(message: types.Message):
     size = notion_queue.qsize()
-    await message.answer(f"📦 Количество задач в очереди: {size}")
+    await message.answer(f"📦 В очереди задач: {size}")

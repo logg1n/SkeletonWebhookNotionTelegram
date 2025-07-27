@@ -1,5 +1,23 @@
+# Основное
 aiogram==3.4.1
+aiohttp~=3.9.5
 Flask==3.0.3
-python-dotenv==1.0.1
 notion-client==2.2.1
-sqlalchemy==2.0.39
+SQLAlchemy~=2.0.39
+pydantic==2.5.3
+pydantic-settings==2.0.0
+
+python-dotenv~=1.0.1
+
+# Миграции
+alembic~=1.11.1
+
+# Асинхронная обработка очередей (если Celery)
+celery~=5.3.0
+redis~=4.5.1
+
+# Разработка и тесты
+pytest~=7.4.0
+black~=23.9.1
+flake8~=6.1.0
+isort~=5.12.0

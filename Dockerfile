@@ -1,15 +1,27 @@
-# Используем python как базу
+# Используем минимальный Python-образ
 FROM python:3.11-slim
 
-# Установка зависимостей
+# Устанавливаем рабочую директорию
 WORKDIR /app
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем зависимости
+COPY requirements.txt .
+
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем исходный код
 COPY . .
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Устанавливаем переменные окружения
+ENV PYTHONUNBUFFERED=1
 
-# Экспонируем порт, который будет слушать aiohttp
-EXPOSE 8080
+# Открываем порт Flask (если нужно)
+EXPOSE 5000
 
-# Стартовый скрипт (Telegram bot с webhook + очередь + Flask отдельно)
-CMD ["python", "start.py"]
